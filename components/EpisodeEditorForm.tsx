@@ -103,8 +103,8 @@ interface EpisodeEditorProps {
   isEdit?: boolean;
 }
 
-type TabType = 'general' | 'media' | 'sections' | 'transcript' | 'clips_quiz' | 'dubbing';
-const VALID_TABS: TabType[] = ['general', 'media', 'sections', 'transcript', 'clips_quiz'];
+type TabType = 'general' | 'media' | 'sections' | 'transcript' | 'clips' | 'quiz' | 'dubbing';
+const VALID_TABS: TabType[] = ['general', 'media', 'sections', 'transcript', 'clips', 'quiz'];
 
 interface AudioExtractionUiState {
   active: boolean;
@@ -882,15 +882,28 @@ export default function EpisodeEditorForm({ initialData, isEdit = false }: Episo
 
         <button
           type="button"
-          onClick={() => changeTab('clips_quiz')}
+          onClick={() => changeTab('clips')}
           className={`px-4 py-2 text-xs font-medium rounded-t-lg transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
-            activeTab === 'clips_quiz'
+            activeTab === 'clips'
               ? 'border-indigo-500 text-indigo-400 bg-zinc-900/60'
               : 'border-transparent text-zinc-400 hover:text-zinc-200'
           }`}
         >
           <Video className="w-4 h-4" />
-          <span>5. Clips & Quiz</span>
+          <span>5. Clips ({formData.clips.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => changeTab('quiz')}
+          className={`px-4 py-2 text-xs font-medium rounded-t-lg transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
+            activeTab === 'quiz'
+              ? 'border-indigo-500 text-indigo-400 bg-zinc-900/60'
+              : 'border-transparent text-zinc-400 hover:text-zinc-200'
+          }`}
+        >
+          <HelpCircle className="w-4 h-4" />
+          <span>6. Quiz ({formData.quiz.length})</span>
         </button>
 
         <button
@@ -903,7 +916,7 @@ export default function EpisodeEditorForm({ initialData, isEdit = false }: Episo
           }`}
         >
           <Languages className="w-4 h-4" />
-          <span>6. Doblaje</span>
+          <span>7. Doblaje</span>
         </button>
       </div>
 
@@ -1716,8 +1729,8 @@ export default function EpisodeEditorForm({ initialData, isEdit = false }: Episo
         </div>
       )}
 
-      {/* TAB 5: CLIPS & QUIZ */}
-      {activeTab === 'clips_quiz' && (
+      {/* TAB 5: CLIPS */}
+      {activeTab === 'clips' && (
         <div className="space-y-6 bg-zinc-900/40 p-6 rounded-xl border border-zinc-800/80">
           {/* Batch upload of clips from the local computer directly to YouTube */}
           <div className="pb-6 border-b border-zinc-800/80">
@@ -1784,133 +1797,136 @@ export default function EpisodeEditorForm({ initialData, isEdit = false }: Episo
               </div>
             ))}
           </div>
+        </div>
+      )}
 
+      {/* TAB 6: QUIZ */}
+      {activeTab === 'quiz' && (
+        <div className="space-y-6 bg-zinc-900/40 p-6 rounded-xl border border-zinc-800/80">
           {/* Quiz AI Generation */}
-          <div className="pt-6 border-t border-zinc-800/80 space-y-4">
-            <div className="bg-gradient-to-r from-indigo-950/60 via-zinc-900 to-purple-950/60 border border-indigo-800/60 rounded-2xl p-5 space-y-4 shadow-xl">
-              <div className="flex items-center gap-2.5 border-b border-indigo-900/40 pb-3">
-                <div className="w-8 h-8 rounded-xl bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-indigo-300">
-                  <Sparkles className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-zinc-100 flex items-center gap-2">
-                    <span>Generar Quiz con IA</span>
-                    <span className="text-[10px] font-mono font-bold bg-indigo-950 border border-indigo-800 text-indigo-300 px-2 py-0.5 rounded">
-                      Gemini
-                    </span>
-                  </h4>
-                  <p className="text-xs text-zinc-400">
-                    Gemini analiza la transcripción y los capítulos ya cargados en este episodio y genera 5 preguntas tipo test.
-                  </p>
-                </div>
+          <div className="bg-gradient-to-r from-indigo-950/60 via-zinc-900 to-purple-950/60 border border-indigo-800/60 rounded-2xl p-5 space-y-4 shadow-xl">
+            <div className="flex items-center gap-2.5 border-b border-indigo-900/40 pb-3">
+              <div className="w-8 h-8 rounded-xl bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-indigo-300">
+                <Sparkles className="w-4 h-4" />
               </div>
+              <div>
+                <h4 className="text-sm font-bold text-zinc-100 flex items-center gap-2">
+                  <span>Generar Quiz con IA</span>
+                  <span className="text-[10px] font-mono font-bold bg-indigo-950 border border-indigo-800 text-indigo-300 px-2 py-0.5 rounded">
+                    Gemini
+                  </span>
+                </h4>
+                <p className="text-xs text-zinc-400">
+                  Gemini analiza la transcripción y los capítulos ya cargados en este episodio y genera 5 preguntas tipo test.
+                </p>
+              </div>
+            </div>
 
+            <button
+              type="button"
+              onClick={handleGenerateQuizWithAI}
+              disabled={quizAiLoading}
+              className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-xs shadow-md shadow-indigo-600/20"
+            >
+              {quizAiLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                  <span>Generando quiz...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 text-indigo-300" />
+                  <span>Generar Quiz desde la Transcripción</span>
+                </>
+              )}
+            </button>
+
+            {quizAiStatus && !quizAiError && (
+              <div className="p-2.5 rounded-xl bg-indigo-950/60 border border-indigo-800/80 text-xs font-mono text-indigo-300 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{quizAiStatus}</span>
+              </div>
+            )}
+
+            {quizAiError && (
+              <div className="p-2.5 rounded-xl bg-rose-950/60 border border-rose-800/80 text-xs font-mono text-rose-300 flex items-center gap-2">
+                <span className="text-rose-400 font-bold">⚠️ Error:</span>
+                <span>{quizAiError}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Quiz */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-200 flex items-center gap-2">
+                  <HelpCircle className="w-4 h-4 text-indigo-400" />
+                  <span>Quiz del Episodio</span>
+                </h3>
+                <p className="text-xs text-zinc-400">Preguntas tipo test que verán los oyentes en la web</p>
+              </div>
               <button
                 type="button"
-                onClick={handleGenerateQuizWithAI}
-                disabled={quizAiLoading}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-xs shadow-md shadow-indigo-600/20"
+                onClick={addQuizQuestion}
+                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium px-3 py-1.5 rounded-lg transition flex items-center gap-1.5"
               >
-                {quizAiLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    <span>Generando quiz...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 text-indigo-300" />
-                    <span>Generar Quiz desde la Transcripción</span>
-                  </>
-                )}
+                <Plus className="w-4 h-4 text-indigo-400" />
+                <span>Añadir Pregunta</span>
               </button>
-
-              {quizAiStatus && !quizAiError && (
-                <div className="p-2.5 rounded-xl bg-indigo-950/60 border border-indigo-800/80 text-xs font-mono text-indigo-300 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>{quizAiStatus}</span>
-                </div>
-              )}
-
-              {quizAiError && (
-                <div className="p-2.5 rounded-xl bg-rose-950/60 border border-rose-800/80 text-xs font-mono text-rose-300 flex items-center gap-2">
-                  <span className="text-rose-400 font-bold">⚠️ Error:</span>
-                  <span>{quizAiError}</span>
-                </div>
-              )}
             </div>
 
-            {/* Quiz */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-semibold text-zinc-200 flex items-center gap-2">
-                    <HelpCircle className="w-4 h-4 text-indigo-400" />
-                    <span>Quiz del Episodio</span>
-                  </h3>
-                  <p className="text-xs text-zinc-400">Preguntas tipo test que verán los oyentes en la web</p>
+            {formData.quiz.map((q: any, idx: number) => (
+              <div key={idx} className="bg-zinc-950 p-3 border border-zinc-800/80 rounded-lg space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono text-zinc-500 shrink-0">#{idx + 1}</span>
+                  <input
+                    type="text"
+                    value={q.question}
+                    onChange={(e) => updateQuizQuestion(idx, e.target.value)}
+                    placeholder="Escribe la pregunta..."
+                    className="flex-1 bg-zinc-900 border border-zinc-800 rounded px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeQuizQuestion(idx)}
+                    className="p-1 text-zinc-500 hover:text-red-400 transition"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={addQuizQuestion}
-                  className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium px-3 py-1.5 rounded-lg transition flex items-center gap-1.5"
-                >
-                  <Plus className="w-4 h-4 text-indigo-400" />
-                  <span>Añadir Pregunta</span>
-                </button>
-              </div>
 
-              {formData.quiz.map((q: any, idx: number) => (
-                <div key={idx} className="bg-zinc-950 p-3 border border-zinc-800/80 rounded-lg space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono text-zinc-500 shrink-0">#{idx + 1}</span>
-                    <input
-                      type="text"
-                      value={q.question}
-                      onChange={(e) => updateQuizQuestion(idx, e.target.value)}
-                      placeholder="Escribe la pregunta..."
-                      className="flex-1 bg-zinc-900 border border-zinc-800 rounded px-3 py-1.5 text-xs text-zinc-100 focus:outline-none focus:border-zinc-600"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeQuizQuestion(idx)}
-                      className="p-1 text-zinc-500 hover:text-red-400 transition"
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-6">
+                  {q.options.map((opt: string, optionIdx: number) => (
+                    <label
+                      key={optionIdx}
+                      className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5"
                     >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-6">
-                    {q.options.map((opt: string, optionIdx: number) => (
-                      <label
-                        key={optionIdx}
-                        className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5"
-                      >
-                        <input
-                          type="radio"
-                          name={`quiz-correct-${idx}`}
-                          checked={q.correctAnswer === optionIdx}
-                          onChange={() => updateQuizCorrectAnswer(idx, optionIdx)}
-                          className="shrink-0 text-indigo-600 focus:ring-0"
-                          title="Marcar como respuesta correcta"
-                        />
-                        <input
-                          type="text"
-                          value={opt}
-                          onChange={(e) => updateQuizOption(idx, optionIdx, e.target.value)}
-                          placeholder={`Opción ${optionIdx + 1}`}
-                          className="flex-1 bg-transparent text-xs text-zinc-100 focus:outline-none min-w-0"
-                        />
-                      </label>
-                    ))}
-                  </div>
+                      <input
+                        type="radio"
+                        name={`quiz-correct-${idx}`}
+                        checked={q.correctAnswer === optionIdx}
+                        onChange={() => updateQuizCorrectAnswer(idx, optionIdx)}
+                        className="shrink-0 text-indigo-600 focus:ring-0"
+                        title="Marcar como respuesta correcta"
+                      />
+                      <input
+                        type="text"
+                        value={opt}
+                        onChange={(e) => updateQuizOption(idx, optionIdx, e.target.value)}
+                        placeholder={`Opción ${optionIdx + 1}`}
+                        className="flex-1 bg-transparent text-xs text-zinc-100 focus:outline-none min-w-0"
+                      />
+                    </label>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
-      {/* TAB 6: DOBLAJE */}
+      {/* TAB 7: DOBLAJE */}
       {activeTab === 'dubbing' && (
         <div className="space-y-6">
           {isEdit && initialData?._id && (formData.audioUrl || formData.videoUrl) ? (
