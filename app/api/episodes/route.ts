@@ -28,7 +28,7 @@ export async function GET(request: Request) {
   }
 
   const episodes = await EpisodeContent.find(filter)
-    .select('title description slug pubDate duration image status isPremiere author season episode tags')
+    .select('title description slug pubDate duration image status isPremiere author season episode tags transcription dubs')
     .sort({ pubDate: -1, createdAt: -1 })
     .lean();
   return NextResponse.json(episodes);

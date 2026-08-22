@@ -6,6 +6,7 @@ import { Radio, FileText, Users, HardDrive, Plus, ArrowUpRight, Loader2, Sparkle
 import IntegrationStatusWidget from '@/components/dashboard/IntegrationStatusWidget';
 import PendingCommentsWidget from '@/components/dashboard/PendingCommentsWidget';
 import PendingTasksWidget from '@/components/dashboard/PendingTasksWidget';
+import MissingTranscriptionsWidget from '@/components/dashboard/MissingTranscriptionsWidget';
 import { PermissionMap, can } from '@/lib/permissions';
 
 export default function DashboardOverviewPage() {
@@ -213,10 +214,14 @@ export default function DashboardOverviewPage() {
       </div>
 
       {/* WIDGETS */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {can(permissions, 'interviews') && <PendingTasksWidget episodes={allEpisodes} />}
-        {can(permissions, 'comments') && <PendingCommentsWidget />}
-        {can(permissions, 'buckets') && <IntegrationStatusWidget />}
+      <div className="space-y-4">
+        {can(permissions, 'episodes') && <MissingTranscriptionsWidget episodes={allEpisodes} />}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {can(permissions, 'interviews') && <PendingTasksWidget episodes={allEpisodes} />}
+          {can(permissions, 'comments') && <PendingCommentsWidget />}
+          {can(permissions, 'buckets') && <IntegrationStatusWidget />}
+        </div>
       </div>
     </div>
   );
