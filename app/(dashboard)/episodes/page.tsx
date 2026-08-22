@@ -3,8 +3,9 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Plus, Search, Radio, Trash2, Edit2, Loader2, Sparkles } from 'lucide-react';
+import { Plus, Search, Radio, Trash2, Edit2, Loader2, Sparkles, Languages } from 'lucide-react';
 import BulkActionsBar from '@/components/BulkActionsBar';
+import BatchDubbingModal from '@/components/BatchDubbingModal';
 
 type StatusFilter = 'all' | 'draft' | 'published';
 
@@ -35,6 +36,7 @@ function EpisodesListContent() {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBatchDubOpen, setIsBatchDubOpen] = useState(false);
 
   const fetchEpisodes = async (query = '', status: StatusFilter = 'all') => {
     setLoading(true);
@@ -168,6 +170,13 @@ function EpisodesListContent() {
           selectedIds={selectedIds}
           totalCount={episodes.length}
           actions={['publish', 'unpublish', 'tag_add', 'tag_remove', 'delete']}
+          customAction={{
+            label: 'Doblar en lote',
+            icon: Languages,
+            onClick: () => setIsBatchDubOpen(true),
+            className:
+              'bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded-lg font-medium transition flex items-center gap-1 shadow-sm',
+          }}
           onClear={() => setSelectedIds([])}
           onSelectAll={() => setSelectedIds(episodes.map((ep) => ep._id))}
           onDone={() => {
@@ -175,6 +184,15 @@ function EpisodesListContent() {
             fetchEpisodes(search, statusFilter);
           }}
           deleteWarning="¿Mover {count} episodio(s) a la papelera? Podrás restaurarlos más tarde."
+        />
+
+        <BatchDubbingModal
+          isOpen={isBatchDubOpen}
+          onClose={() => setIsBatchDubOpen(false)}
+          selectedEpisodes={episodes.filter((ep) => selectedIds.includes(ep._id))}
+          onComplete={() => {
+            fetchEpisodes(search, statusFilter);
+          }}
         />
 
         <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl divide-y divide-zinc-800/60 overflow-hidden">
