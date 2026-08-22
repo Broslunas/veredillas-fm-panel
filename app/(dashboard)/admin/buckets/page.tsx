@@ -26,7 +26,8 @@ import BucketFileBrowser from '@/components/BucketFileBrowser';
 import { getActiveAlertThreshold, getAlertLevelForThreshold } from '@/lib/storage-alert-levels';
 
 const HARD_MAX_GB = 9.2;
-const HARD_MAX_BYTES = Math.floor(HARD_MAX_GB * 1024 ** 3);
+// GB decimal (1000^3), igual que el dashboard de Cloudflare R2 (no GiB/1024^3).
+const HARD_MAX_BYTES = Math.floor(HARD_MAX_GB * 1000 ** 3);
 
 type BucketType = 'images' | 'multimedia' | 'clips' | 'social';
 
@@ -92,7 +93,9 @@ const emptyForm: BucketFormState = {
 
 function formatSize(bytes: number) {
   if (!bytes) return '0 B';
-  const k = 1024;
+  // Base decimal (1000), igual que el dashboard de Cloudflare R2, para que el uso
+  // mostrado aquí coincida con el que Cloudflare reporta (no usar 1024/GiB).
+  const k = 1000;
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
@@ -282,7 +285,7 @@ export default function BucketsAdminPage() {
       secretAccessKey: '',
       endpoint: bucket.endpoint,
       publicUrlBase: bucket.publicUrlBase,
-      maxBytesGb: String(bucket.maxBytes / 1024 ** 3),
+      maxBytesGb: String(bucket.maxBytes / 1000 ** 3),
       isDefault: bucket.isDefault,
       isActive: bucket.isActive,
     });
@@ -322,7 +325,7 @@ export default function BucketsAdminPage() {
       accessKeyId: form.accessKeyId,
       endpoint: form.endpoint,
       publicUrlBase: form.publicUrlBase,
-      maxBytes: Math.floor(maxBytesGbNum * 1024 ** 3),
+      maxBytes: Math.floor(maxBytesGbNum * 1000 ** 3),
       isDefault: form.isDefault,
       isActive: form.isActive,
     };

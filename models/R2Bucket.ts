@@ -1,6 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 
-export const HARD_MAX_BUCKET_BYTES = Math.floor(9.2 * 1024 ** 3); // 9.2GB, techo estricto del sistema
+// GB decimal (1000^3), igual que el dashboard/billing de Cloudflare R2 (no GiB/1024^3).
+export const HARD_MAX_BUCKET_BYTES = Math.floor(9.2 * 1000 ** 3); // 9.2GB, techo estricto del sistema
 
 export type R2BucketType = 'images' | 'multimedia' | 'clips' | 'social';
 

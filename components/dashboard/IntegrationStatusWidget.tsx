@@ -20,7 +20,8 @@ interface BucketUsage {
 }
 
 function formatGB(bytes: number): string {
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  // Base decimal (1000), igual que el dashboard de Cloudflare R2 (no GiB/1024^3).
+  return `${(bytes / (1000 * 1000 * 1000)).toFixed(1)} GB`;
 }
 
 export default function IntegrationStatusWidget() {

@@ -35,6 +35,7 @@ import {
   UserCheck,
   AlertCircle,
   Languages,
+  ImageOff,
 } from 'lucide-react';
 
 const CHAPTER_TIME_REGEX = /^(\d{1,2}:)?\d{1,2}:\d{2}$/;
@@ -623,7 +624,7 @@ export default function EpisodeEditorForm({ initialData, isEdit = false }: Episo
     });
   };
 
-  const handleClipUploaded = (clip: { title: string; url: string }) => {
+  const handleClipUploaded = (clip: { title: string; url: string; thumbnailUrl?: string }) => {
     setFormData((prev) => ({
       ...prev,
       clips: [...prev.clips, clip],
@@ -1739,6 +1740,26 @@ export default function EpisodeEditorForm({ initialData, isEdit = false }: Episo
 
             {formData.clips.map((clip: any, idx: number) => (
               <div key={idx} className="flex items-center gap-2 bg-zinc-950 p-2 border border-zinc-800/80 rounded-lg">
+                {/* Check visual: miniatura guardada para este clip (o aviso si falta) */}
+                {clip.thumbnailUrl ? (
+                  <a
+                    href={clip.thumbnailUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="relative w-9 h-9 rounded border border-emerald-800/60 overflow-hidden shrink-0"
+                    title="Miniatura en R2 (clic para ver a tamaño completo)"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={clip.thumbnailUrl} alt="Miniatura del clip" className="w-full h-full object-cover" />
+                  </a>
+                ) : (
+                  <div
+                    className="w-9 h-9 rounded border border-zinc-800 bg-zinc-900 flex items-center justify-center shrink-0"
+                    title="Sin miniatura (clip añadido manualmente o miniatura no generada)"
+                  >
+                    <ImageOff className="w-3.5 h-3.5 text-zinc-600" />
+                  </div>
+                )}
                 <input
                   type="text"
                   value={clip.title}
