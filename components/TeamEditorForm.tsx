@@ -246,9 +246,12 @@ export default function TeamEditorForm({ initialData, isEdit = false }: TeamEdit
               required
               value={formData.schoolYear}
               onChange={(e) => setFormData({ ...formData, schoolYear: e.target.value })}
-              placeholder="2025/2026"
+              placeholder="2025/2026 o 2025/2027"
               className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-100 font-mono placeholder-zinc-600 focus:outline-none focus:border-zinc-500 transition"
             />
+            <p className="text-[11px] text-zinc-500 mt-1">
+              Año único (ej: 2025/2026) o rango plurianual (ej: 2025/2027) para estar activo en varios cursos.
+            </p>
           </div>
 
           <div>

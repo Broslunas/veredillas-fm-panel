@@ -30,13 +30,32 @@ export default function TeamListPage() {
     fetchTeam(search);
   }, [search]);
 
-  const schoolYears = useMemo(
-    () => [...new Set(team.map((m) => m.schoolYear).filter(Boolean))].sort().reverse(),
-    [team]
-  );
+  const schoolYears = useMemo(() => {
+    const all = team.flatMap((m) => {
+      const parts = (m.schoolYear || '').split('/').map((p: string) => parseInt(p.trim(), 10));
+      if (parts.length === 2 && !Number.isNaN(parts[0]) && !Number.isNaN(parts[1]) && parts[1] > parts[0]) {
+        const list = [];
+        for (let y = parts[0]; y < parts[1]; y++) list.push(`${y}/${y + 1}`);
+        return list;
+      }
+      return m.schoolYear ? [m.schoolYear] : [];
+    });
+    return [...new Set(all)].sort().reverse();
+  }, [team]);
 
   const filteredTeam = useMemo(
-    () => (schoolYearFilter ? team.filter((m) => m.schoolYear === schoolYearFilter) : team),
+    () =>
+      schoolYearFilter
+        ? team.filter((m) => {
+            const parts = (m.schoolYear || '').split('/').map((p: string) => parseInt(p.trim(), 10));
+            if (parts.length === 2 && !Number.isNaN(parts[0]) && !Number.isNaN(parts[1]) && parts[1] > parts[0]) {
+              const list = [];
+              for (let y = parts[0]; y < parts[1]; y++) list.push(`${y}/${y + 1}`);
+              return list.includes(schoolYearFilter);
+            }
+            return m.schoolYear === schoolYearFilter;
+          })
+        : team,
     [team, schoolYearFilter]
   );
 
