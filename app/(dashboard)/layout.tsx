@@ -31,6 +31,7 @@ import {
   Images,
   History,
   Lock,
+  DatabaseBackup,
 } from 'lucide-react';
 import CommandPalette from '@/components/dashboard/CommandPalette';
 import {
@@ -56,6 +57,8 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   /** Hidden unless the user has at least read access on this section. */
   section?: PermissionSection;
+  /** Hidden unless the user's role is in this list. Bypasses the permission matrix entirely — for role-hardcoded, non-overridable entries. */
+  roles?: ('admin' | 'owner')[];
   isPopUp?: boolean;
   action?: () => void;
 }
@@ -178,6 +181,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { label: 'Invitados', href: '/guests', icon: UserCheck, section: 'guests' },
         { label: 'Equipo', href: '/team', icon: Users, section: 'team' },
         { label: 'Papelera', href: '/trash', icon: Trash2, section: 'trash' },
+        { label: 'Copias de Seguridad', href: '/admin/backup', icon: DatabaseBackup, roles: ['admin', 'owner'] },
       ],
     },
     {
@@ -207,7 +211,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navGroups = allNavGroups
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => !item.section || can(user?.permissions, item.section)),
+      items: group.items.filter(
+        (item) =>
+          (!item.section || can(user?.permissions, item.section)) &&
+          (!item.roles || (!!user?.role && item.roles.includes(user.role as 'admin' | 'owner')))
+      ),
     }))
     .filter((group) => group.items.length > 0);
 
