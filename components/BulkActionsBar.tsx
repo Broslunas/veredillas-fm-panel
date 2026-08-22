@@ -15,6 +15,12 @@ interface BulkActionsBarProps {
   onDone: () => void;
   /** Copy shown in the delete confirmation, since gallery deletes are permanent. */
   deleteWarning: string;
+  customAction?: {
+    label: string;
+    icon?: React.ComponentType<{ className?: string }>;
+    onClick: () => void;
+    className?: string;
+  };
 }
 
 export default function BulkActionsBar({
@@ -26,6 +32,7 @@ export default function BulkActionsBar({
   onSelectAll,
   onDone,
   deleteWarning,
+  customAction,
 }: BulkActionsBarProps) {
   const [running, setRunning] = useState<BulkAction | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -155,6 +162,20 @@ export default function BulkActionsBar({
             >
               <TagsIcon className="w-3.5 h-3.5" />
               <span>{BULK_ACTION_LABELS.tag_remove}</span>
+            </button>
+          )}
+
+          {customAction && (
+            <button
+              onClick={customAction.onClick}
+              disabled={running !== null}
+              className={
+                customAction.className ||
+                'bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-3 py-1 rounded-lg font-medium transition flex items-center gap-1'
+              }
+            >
+              {customAction.icon && <customAction.icon className="w-3.5 h-3.5" />}
+              <span>{customAction.label}</span>
             </button>
           )}
 
