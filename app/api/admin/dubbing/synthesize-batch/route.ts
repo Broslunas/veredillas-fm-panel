@@ -74,38 +74,40 @@ export async function POST(request: Request) {
     const errors: { index: number; error: string }[] = [];
     const segmentsByIndex = new Map(track.segments.map((s) => [s.index, s]));
 
-    for (const segment of batch) {
-      try {
-        const voice = track.voiceMap[String(segment.speaker ?? 0)] || Object.values(track.voiceMap)[0];
-        if (!voice) throw new Error('No hay ninguna voz asignada para este segmento');
+    await Promise.all(
+      batch.map(async (segment) => {
+        try {
+          const voice = track.voiceMap[String(segment.speaker ?? 0)] || Object.values(track.voiceMap)[0];
+          if (!voice) throw new Error('No hay ninguna voz asignada para este segmento');
 
-        const wavBuffer = await synthesizeWithRetry(segment.translatedText || segment.text, voice);
-        const parsed = parseWav(wavBuffer);
-        const key = `dubs-tmp/${episodeId}/${lang}/seg-${String(segment.index).padStart(5, '0')}.wav`;
+          const wavBuffer = await synthesizeWithRetry(segment.translatedText || segment.text, voice);
+          const parsed = parseWav(wavBuffer);
+          const key = `dubs-tmp/${episodeId}/${lang}/seg-${String(segment.index).padStart(5, '0')}.wav`;
 
-        await client.send(
-          new PutObjectCommand({
-            Bucket: bucket.bucketName,
-            Key: key,
-            Body: wavBuffer,
-            ContentType: 'audio/wav',
-          })
-        );
+          await client.send(
+            new PutObjectCommand({
+              Bucket: bucket.bucketName,
+              Key: key,
+              Body: wavBuffer,
+              ContentType: 'audio/wav',
+            })
+          );
 
-        const updated: IDubSegment = {
-          ...segment,
-          status: 'synthesized',
-          tempKey: key,
-          durationSeconds: parsed.samples.length / parsed.sampleRate,
-          error: undefined,
-        };
-        segmentsByIndex.set(segment.index, updated);
-      } catch (error: any) {
-        const message = error?.message || 'Error al sintetizar el segmento';
-        errors.push({ index: segment.index, error: message });
-        segmentsByIndex.set(segment.index, { ...segment, status: 'error', error: message });
-      }
-    }
+          const updated: IDubSegment = {
+            ...segment,
+            status: 'synthesized',
+            tempKey: key,
+            durationSeconds: parsed.samples.length / parsed.sampleRate,
+            error: undefined,
+          };
+          segmentsByIndex.set(segment.index, updated);
+        } catch (error: any) {
+          const message = error?.message || 'Error al sintetizar el segmento';
+          errors.push({ index: segment.index, error: message });
+          segmentsByIndex.set(segment.index, { ...segment, status: 'error', error: message });
+        }
+      })
+    );
 
     track.segments = track.segments.map((s) => segmentsByIndex.get(s.index) || s);
 
