@@ -4,7 +4,8 @@ import User from '@/models/User';
 import { STORAGE_ALERT_LEVELS, getActiveAlertThreshold, getAlertLevelForThreshold, StorageAlertLevel } from '@/lib/storage-alert-levels';
 
 function formatGB(bytes: number): string {
-  return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+  // Base decimal (1000), igual que el dashboard de Cloudflare R2 (no GiB/1024^3).
+  return `${(bytes / 1000 ** 3).toFixed(2)} GB`;
 }
 
 async function sendStorageAlertEmail(

@@ -71,7 +71,7 @@ async function migrateClip(entry, { client, bucket, publicBase, EpisodeContent, 
   const [videoStat, thumbStat] = await Promise.all([stat(entry.localVideoPath), stat(entry.localThumbPath)]);
   const projectedBytes = usedBytes + videoStat.size + thumbStat.size;
   if (projectedBytes > maxBytes) {
-    throw new Error(`Subir este clip superaría el límite del bucket (${(maxBytes / 1024 ** 3).toFixed(2)} GB). Se detiene la migración.`);
+    throw new Error(`Subir este clip superaría el límite del bucket (${(maxBytes / 1000 ** 3).toFixed(2)} GB). Se detiene la migración.`);
   }
 
   console.log(`\n-> Subiendo "${entry.title}" (${entry.videoId})...`);
@@ -126,7 +126,7 @@ async function main() {
 
   const pending = manifest.filter((entry) => entry.status === 'downloaded');
   console.log(`Clips pendientes de migrar: ${pending.length}`);
-  console.log(`Uso actual del bucket "${bucket.bucketName}": ${(usedBytes / 1024 ** 3).toFixed(2)} GB de ${(maxBytes / 1024 ** 3).toFixed(2)} GB`);
+  console.log(`Uso actual del bucket "${bucket.bucketName}": ${(usedBytes / 1000 ** 3).toFixed(2)} GB de ${(maxBytes / 1000 ** 3).toFixed(2)} GB`);
 
   let migrated = 0;
   const failures = [];
